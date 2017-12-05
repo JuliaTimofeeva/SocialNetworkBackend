@@ -1,0 +1,96 @@
+package com.socnet.back.persistence.service.Impl;
+
+import com.socnet.back.persistence.model.MessageModel;
+import com.socnet.back.persistence.model.UserModel;
+import com.socnet.back.persistence.repository.MessagesRepository;
+import com.socnet.back.persistence.repository.UserRepository;
+import com.socnet.back.persistence.service.MessagesService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Created by днс on 25.11.2017.
+ */
+@Service
+public class MessagesServiceImpl implements MessagesService {
+
+    @Autowired
+    private MessagesRepository messageRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Override
+    public void save(MessageModel message) {
+        message.setTime(Timestamp.valueOf(LocalDateTime.now()));
+        messageRepository.save(message);
+    }
+
+    @Override
+    public List<MessageModel> getMessagesBySender(String email) {
+        return messageRepository.findAllBySender(email);
+    }
+
+    @Override
+    public List<MessageModel> getChatBySenderAndRecevier(String sender, String receiver) {
+
+
+        List<MessageModel> messagesFromMe = messageRepository.findAllBySenderAndReceiver(sender, receiver);
+        List<MessageModel> messagesToMe = messageRepository.findAllBySenderAndReceiver(receiver, sender);
+
+        //далее их нужно объекдинить в правильном порядке по времени
+
+        List<MessageModel> result = new ArrayList<>();
+
+        int i = 0;
+        int j = 0;
+
+        while (i < messagesFromMe.size() && j < messagesToMe.size()){
+            if (messagesFromMe.get(i).getTime().before(messagesToMe.get(j).getTime())){
+                result.add(messagesFromMe.get(i));
+                i++;
+            } else {
+                result.add(messagesToMe.get(j));
+                j++;
+            }
+        }
+
+        if (i < messagesFromMe.size()){
+            while (i < messagesFromMe.size()){
+                result.add(messagesFromMe.get(i));
+                i++;
+            }
+        } else {
+            while (j < messagesToMe.size()){
+                result.add(messagesToMe.get(j));
+                j++;
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<UserModel> getAllChatUsersWithSender(String sender) {
+        List<String> emails = messageRepository.findAllChatEmailsBySender(sender);
+        List<UserModel> users = new ArrayList<>();
+        for (String email : emails) {
+            users.add(userRepository.findByEmail(email));
+        }
+        return users;
+    }
+
+
+    @Override
+    public List<String> test(String sender) {
+        return messageRepository.findAllChatEmailsBySender(sender);
+//        messageRepository.findDistinctReceiverBySender();
+//        return null;
+    }
+
+}
