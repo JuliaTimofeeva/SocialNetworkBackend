@@ -18,7 +18,15 @@ public interface MessagesRepository extends JpaRepository<MessageModel, Long> {
     List<MessageModel> findAllBySender(String sender);//найти все сообщения пользователя
     //List<String> findAllReceiverBySender(String sender);//найти все сообщения пользователя
 
-    @Query("select distinct m.receiver from MessageModel m where m.sender = ?1 or receiver = ?1")
+//    @Query("select distinct m.receiver from MessageModel m where m.sender = ?1 or receiver = ?1")
+//    List<String> findAllChatEmailsBySender(String sender);//найти email всех собеседников отправителя
+
+
+    @Query("select distinct m.receiver from MessageModel m where m.sender = ?1")
     List<String> findAllChatEmailsBySender(String sender);//найти email всех собеседников отправителя
+
+    @Query("select distinct m.sender from MessageModel m where m.receiver = ?1")
+    List<String> findAllChatEmailsByReceiver(String sender);//найти email всех собеседников отправителя
+
 
 }

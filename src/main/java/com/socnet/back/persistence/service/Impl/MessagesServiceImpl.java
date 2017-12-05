@@ -77,10 +77,13 @@ public class MessagesServiceImpl implements MessagesService {
 
     @Override
     public List<UserModel> getAllChatUsersWithSender(String sender) {
-        List<String> emails = messageRepository.findAllChatEmailsBySender(sender);
+        List<String> receivers = messageRepository.findAllChatEmailsBySender(sender);
+        List<String> senders = messageRepository.findAllChatEmailsByReceiver(sender);
+        receivers.addAll(senders);
         List<UserModel> users = new ArrayList<>();
-        for (String email : emails) {
-            users.add(userRepository.findByEmail(email));
+        for (String email : receivers) {
+            if (!email.equals(sender))
+                users.add(userRepository.findByEmail(email));
         }
         return users;
     }
