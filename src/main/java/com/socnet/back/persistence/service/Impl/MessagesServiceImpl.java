@@ -12,6 +12,8 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by днс on 25.11.2017.
@@ -80,12 +82,15 @@ public class MessagesServiceImpl implements MessagesService {
         List<String> receivers = messageRepository.findAllChatEmailsBySender(sender);
         List<String> senders = messageRepository.findAllChatEmailsByReceiver(sender);
         receivers.addAll(senders);
-        List<UserModel> users = new ArrayList<>();
+        Set<String> emails = new TreeSet<>();
         for (String email : receivers) {
             if (!email.equals(sender))
-                users.add(userRepository.findByEmail(email));
+                emails.add(email);
+//                users.add(userRepository.findByEmail(email));
         }
-        return users;
+        List<UserModel> chatUsers = new ArrayList<>();
+        emails.stream().forEach(s->chatUsers.add(userRepository.findByEmail(s)));
+        return chatUsers;
     }
 
 
